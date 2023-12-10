@@ -1,0 +1,33 @@
+version: '3.2'
+
+services:
+  app:
+    image: tusharkawade/blog:0.0.1
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/blog?autoReconnect=true&allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: root
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0.27
+    environment:
+      DATABASE_HOST: docker-mysql
+      DATABASE_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: blog
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: root
+    ports:
+      - 42333:3306
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "db", "-u", "admin", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
